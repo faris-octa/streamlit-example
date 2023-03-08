@@ -1,20 +1,20 @@
 import streamlit as st
-# from streamlit_modal import Modal
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-# from st_aggrid import AgGrid
-from datetime import date
 import pandas as pd
+import gspread
+from google.oauth2 import service_account
 import numpy as np
 import time
 
-# define variable for json and sheet name
-json_file = 'credentials.json'
+# Create a connection object.
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
+    scopes=[
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ],
+)
 worksheet_name = 'Sheet1'
-
-# Credentials making
-creds = ServiceAccountCredentials.from_json_keyfile_name(json_file)
-client = gspread.authorize(creds) # login as client
+client = gspread.authorize(credentials) # login as client
 spreadsheet = client.open('OVEN') # open spreadsheet
 worksheet = spreadsheet.worksheet(worksheet_name) # choose worksheet
 
@@ -36,8 +36,6 @@ with st.container():
 
 # Menampilkan data sebagai tabel menggunakan Streamlit
 st.dataframe(df[1:], use_container_width=True)
-# AgGrid(df, editable=True)
-
 
 # Fitur tambah dan hapus baris
 col1, col2 = st.columns(2)
