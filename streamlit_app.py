@@ -1,38 +1,88 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
 import streamlit as st
-
-"""
-# Welcome to Streamlit!
-
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
-
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
-
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+# from streamlit_modal import Modal
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+# from st_aggrid import AgGrid
+from datetime import date
+import pandas as pd
+import numpy as np
+import time
 
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+# def update_index_choice():
+#     st.session_state.pic_to_del = pic
+@st.cache_data(ttl=600)
+# define variable for json and sheet name
+json_file = 'credentials.json'
+worksheet_name = 'Sheet1'
 
-    Point = namedtuple('Point', 'x y')
-    data = []
+# Credentials making
+creds = ServiceAccountCredentials.from_json_keyfile_name(json_file)
+client = gspread.authorize(creds) # login as client
+spreadsheet = client.open('OVEN') # open spreadsheet
+worksheet = spreadsheet.worksheet(worksheet_name) # choose worksheet
 
-    points_per_turn = total_points / num_turns
+# Mengambil semua data pada worksheet dan buat menjadi dataframe
+data = worksheet.get_all_values()
+df = pd.DataFrame(data[1:], columns=data[0])
+df.index = np.arange(0, len(df))
 
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
+# web panel
+st.set_page_config(page_title="Faris' Webpage", page_icon=":tada:", layout="wide")
 
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+# Header
+with st.container():
+    st.header("Oven 45\xb0C")
+    st.subheader("Realtime Sample Tracking")
+
+# session state
+# "st.session_state object:", st.session_state  
+
+# Menampilkan data sebagai tabel menggunakan Streamlit
+st.dataframe(df[1:], use_container_width=True)
+# AgGrid(df, editable=True)
+
+
+# Fitur tambah dan hapus baris
+col1, col2 = st.columns(2)
+
+with col1:
+    with st.expander("Tambah sampel baru"):
+        with st.form("add_sample", clear_on_submit=True):
+            nama_sampel = st.text_input('Nama Sampel')
+            pic = st.text_input('PIC')
+            input_date = st.date_input("Tanggal Masuk")
+            output_date = st.date_input("Tanggal Keluar")
+
+            submitted = st.form_submit_button("Submit")
+        if submitted:
+            worksheet.append_row([nama_sampel, pic.title(), input_date.isoformat(), output_date.isoformat()])
+            st.success('Data berhasil ditambahkan')
+            time.sleep(2)
+            st.experimental_rerun()
+
+with col2:
+    with st.expander("Keluarkan sampel"):
+        col_1, col_2 = st.columns([1,2])
+        with col_1:
+            pic = st.selectbox('choose PIC',
+                               options = df['PIC'].unique(),
+                               format_func=lambda x: 'Select...' if x == ' ' else x,
+                               key='pic_to_remove')
+            
+        with col_2:
+            sampel = st.selectbox('choose sample',
+                                  options=df[df['PIC']==pic].index.to_list(),
+                                  format_func=lambda x: '' if x == 0 else x,
+                                  disabled = st.session_state.pic_to_remove == ' ',
+                                  key='sample_to_remove')
+        
+        submitted = st.button("Submit")
+        if submitted:
+            if pic != ' ':
+                worksheet.delete_row(sampel+2)
+                st.success(f'berhasil mengeluarkan {sampel} milik {pic}')
+                time.sleep(1)
+                st.experimental_rerun()
+            else:
+                st.error('silahkan isi form di atas terlebih dahulu')
