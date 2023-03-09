@@ -79,7 +79,7 @@ with col2:
         if submitted:
             if pic != ' ':
                 worksheet.delete_row(deleted_row+2)
-                st.success(f'berhasil mengeluarkan {df.loc[df['info'] == sampel, 'Sample']} milik {pic}')
+                st.success(f'berhasil mengeluarkan {sampel} milik {pic}')
                 time.sleep(1)
                 st.experimental_rerun()
             else:
