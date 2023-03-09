@@ -73,7 +73,7 @@ with col2:
                                   format_func=lambda x: '' if x == "0.  " else x,
                                   disabled = st.session_state.pic_to_remove == ' ',
                                   key='sample_to_remove')
-            deleted_row = df[df['info']==sampel].index.to_list()
+            deleted_row = int(df[df['info']==sampel].index.to_list())
         
         submitted = st.button("Submit")
         if submitted:
