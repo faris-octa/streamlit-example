@@ -77,7 +77,7 @@ with col2:
         submitted = st.button("Submit")
         if submitted:
             if pic != ' ':
-                deleted_row = df[df['info']==sampel].index[0]
+                deleted_row = int(df[df['info']==sampel].index[0])
                 worksheet.delete_row(deleted_row+2)
                 st.success(f'berhasil mengeluarkan {sampel} milik {pic}')
                 time.sleep(1)
