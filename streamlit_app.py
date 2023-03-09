@@ -28,8 +28,8 @@ st.set_page_config(page_title="Faris' Webpage", page_icon=":tada:", layout="wide
 
 # Header
 with st.container():
-    st.header("Devtech Oven 45\xb0C")
-    st.subheader("Realtime Sample Tracking")
+    st.header("Devtech")
+    st.subheader("Realtime Sample Tracking: Oven 45\xb0C")
 
 # session state
 # "st.session_state object:", st.session_state  
