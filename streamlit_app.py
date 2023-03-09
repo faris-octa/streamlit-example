@@ -28,7 +28,7 @@ st.set_page_config(page_title="Faris' Webpage", page_icon=":tada:", layout="wide
 
 # Header
 with st.container():
-    st.header("Oven 45\xb0C")
+    st.header("Devtech Oven 45\xb0C")
     st.subheader("Realtime Sample Tracking")
 
 # session state
@@ -36,6 +36,9 @@ with st.container():
 
 # Menampilkan data sebagai tabel menggunakan Streamlit
 st.dataframe(df[1:], use_container_width=True)
+
+# tambah dataframe gabungan index dengan nama sample
+df['info'] = df.index.astype(str) + ". " + df['Sample']
 
 # Fitur tambah dan hapus baris
 col1, col2 = st.columns(2)
@@ -66,15 +69,16 @@ with col2:
             
         with col_2:
             sampel = st.selectbox('choose sample',
-                                  options=df[df['PIC']==pic].index.to_list(),
+                                  options=df.loc[df['PIC'] == pic, 'info'],
                                   format_func=lambda x: '' if x == 0 else x,
                                   disabled = st.session_state.pic_to_remove == ' ',
                                   key='sample_to_remove')
+            deleted_row = df[df['info']==sampel].index.to_list()
         
         submitted = st.button("Submit")
         if submitted:
             if pic != ' ':
-                worksheet.delete_row(sampel+2)
+                worksheet.delete_row(deleted_row+2)
                 st.success(f'berhasil mengeluarkan {sampel} milik {pic}')
                 time.sleep(1)
                 st.experimental_rerun()
