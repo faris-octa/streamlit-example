@@ -70,7 +70,7 @@ with col2:
         with col_2:
             sampel = st.selectbox('choose sample',
                                   options=df.loc[df['PIC'] == pic, 'info'],
-                                  format_func=lambda x: '' if x == 0 else x,
+                                  format_func=lambda x: '' if x == "0.  " else x,
                                   disabled = st.session_state.pic_to_remove == ' ',
                                   key='sample_to_remove')
             deleted_row = df[df['info']==sampel].index.to_list()
@@ -79,7 +79,7 @@ with col2:
         if submitted:
             if pic != ' ':
                 worksheet.delete_row(deleted_row+2)
-                st.success(f'berhasil mengeluarkan {sampel} milik {pic}')
+                st.success(f'berhasil mengeluarkan {df.loc[df['info'] == sampel, 'Sample']} milik {pic}')
                 time.sleep(1)
                 st.experimental_rerun()
             else:
